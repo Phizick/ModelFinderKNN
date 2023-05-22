@@ -34,8 +34,8 @@ def login():
     username = request.json.get('username')
     password = request.json.get('password')
     if username and password:
-        existing_user = mongo.db.users.find_one({'username': username})
-        if existing_user and User(existing_user['username'], existing_user['password_hash']).check_password(password):
+        existing_user = mongo.db.users.find_one({'username': username, 'password': password})
+        if existing_user:
             return jsonify({'message': 'Login successful.'}), 200
         else:
             return jsonify({'error': 'Invalid credentials.'}), 400
