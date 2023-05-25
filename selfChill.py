@@ -1,7 +1,4 @@
 import json
-from flask import Flask, request
-
-app = Flask(__name__)
 
 
 def load_tours_data(file_path):
@@ -25,30 +22,19 @@ def filter_tours_by_tags(tours, tag_list):
     return filtered_tours
 
 
-@app.route('/get_recommended_tours', methods=['POST'])
-def get_recommended_tours():
-    # Получаем список тегов из POST запроса
-    tag_list = request.json.get('tags', [])
-
-    # Загружаем данные всех туров
-    tours_file_path = "./data/tours.json"
-    all_tours = load_tours_data(tours_file_path)
-
-    # Фильтруем туры по тегам
+def get_recommended_tours(file_path, tag_list, top_n=15):
+    all_tours = load_tours_data(file_path)
     filtered_tours = filter_tours_by_tags(all_tours, tag_list)
 
-    # Сортируем туры по количеству совпадающих тегов и возвращаем список результатов
+    # Сортируем туры по количеству совпадающих тегов и возвращаем топ-N результатов
     sorted_tours = sorted(filtered_tours, key=lambda x: len(set(x.get("dictionary_data", {}).get("tags", [])) & set(tag_list)), reverse=True)
-    recommended_tours = sorted_tours[:15]
-
-    # Формируем список результатов
-    result = []
-    for tour in recommended_tours:
-        result.append(tour["dictionary_data"])
-
-    # Возвращаем список результатов в формате JSON
-    return json.dumps(result)
+    return sorted_tours[:top_n]
 
 
-if __name__ == '__main__':
-    app.run()
+# Пример использования
+tours_file_path = "./data/tours.json"
+tags = ["611a817f57f8c10019f8c8eb", "611a84fe57f8c10019f8c905", "611a7d6d57f8c10019f8c8d7"]
+
+recommended_tours = get_recommended_tours(tours_file_path, tags)
+for tour in recommended_tours:
+    print(tour["dictionary_data"]["title"])
